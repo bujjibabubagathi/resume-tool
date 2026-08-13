@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Resume Tailor - FREE Version</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+body{font-family:Arial;background:#f0f2f5;padding:20px;}
+h1{color:#1a73e8;text-align:center;}
+.container{max-width:900px;margin:auto;background:white;padding:30px;border-radius:15px;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+textarea{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border-radius:8px;font-size:14px;}
+label{font-weight:bold;font-size:15px;}
+.big-button{background:#1a73e8;color:white;font-size:22px;padding:18px;border:none;border-radius:12px;cursor:pointer;width:100%;margin:20px 0;}
+.big-button:hover{background:#0d5fd1;}
+.step-box{border-radius:10px;padding:20px;margin:15px 0;}
+.step1{background:#fff3e0;border-left:5px solid #ff9800;}
+.step2{background:#e8f5e9;border-left:5px solid #4caf50;}
+.step3{background:#e3f2fd;border-left:5px solid #2196f3;}
+.step4{background:#f3e5f5;border-left:5px solid #9c27b0;}
+.step-title{font-size:18px;font-weight:bold;margin-bottom:10px;}
+pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.6;}
+.loading{text-align:center;color:#1a73e8;font-size:18px;padding:20px;}
+.copy-btn{background:#4caf50;color:white;padding:12px 24px;border:none;border-radius:8px;font-size:16px;cursor:pointer;margin-top:10px;width:100%;}
+input{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border-radius:8px;font-size:14px;}
+.success{background:#e8f5e9;border:2px solid #4caf50;padding:15px;border-radius:8px;margin:10px 0;text-align:center;font-size:18px;}
+.error{background:#ffebee;border:2px solid #f44336;padding:15px;border-radius:8px;margin:10px 0;color:#c62828;}
+.free-badge{background:#4caf50;color:white;padding:5px 10px;border-radius:20px;font-size:14px;font-weight:bold;}
+.model-select{padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin:8px 0;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🚀 Smart Resume Tailor <span class="free-badge">100% FREE</span></h1>
+<p style="text-align:center;color:#666;">No API Key • No Limits • Unlimited Free Use</p>
+
+<label>Choose AI Model:</label>
+<select id="model" class="model-select" style="width:100%;">
+  <option value="gpt-4o-mini">GPT-4o Mini (Fast, Free)</option>
+  <option value="gpt-4o">GPT-4o (Best Quality, Free)</option>
+  <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Best for Resumes)</option>
+  <option value="claude-sonnet-4">Claude 4 Sonnet (Newest)</option>
+  <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+</select>
+
+<label>1. Your Master Resume:</label>
+<textarea id="master" rows="10" placeholder="Paste your full master resume here..."></textarea>
+
+<label>2. Job Description:</label>
+<textarea id="job" rows="8" placeholder="Paste the full job description here..."></textarea>
+
+<label>3. Company Name:</label>
+<input type="text" id="company" placeholder="e.g. Johnson Controls">
+
+<label>4. Job Role:</label>
+<input type="text" id="role" placeholder="e.g. Product Development Engineer">
+
+<label>5. Your Instructions (optional):</label>
+<textarea id="instructions" rows="2" placeholder="e.g. Keep to 1 page. Focus on HVAC and thermal systems. ATS friendly."></textarea>
+
+<button class="big-button" onclick="tailorResume()">
+🔥 TAILOR MY RESUME NOW (100% FREE)
+</button>
+
+<div id="loading" style="display:none" class="loading">
+⏳ Running all 4 steps... Please wait 30-60 seconds...
+<br><br>
+<span id="progress">Starting...</span>
+</div>
+
+<div id="errorbox" style="display:none" class="error"></div>
+
+<div id="output" style="display:none">
+
+<div class="success">
+✅ Your resume has been tailored successfully! (100% FREE)
+</div>
+
+<div class="step-box step1">
+<div class="step-title">📊 STEP 1: Score & Diagnosis</div>
+<pre id="step1result"></pre>
+</div>
+
+<div class="step-box step2">
+<div class="step-title">✍️ STEP 2: Rewritten Experience</div>
+<pre id="step2result"></pre>
+</div>
+
+<div class="step-box step3">
+<div class="step-title">🤖 STEP 3: ATS + Hiring Manager Fixes</div>
+<pre id="step3result"></pre>
+</div>
+
+<div class="step-box step4">
+<div class="step-title">✅ STEP 4: Final Complete Resume</div>
+<pre id="step4result"></pre>
+<button class="copy-btn" onclick="copyResume()">
+📋 Copy Final Resume to Clipboard
+</button>
+</div>
+
+</div>
+</div>
+
+<script>
+window.onload = function() {
+  var resume = localStorage.getItem('master_resume');
+  if(resume) document.getElementById('master').value = resume;
+};
+
+async function callAI(prompt) {
+  var model = document.getElementById('model').value;
+  localStorage.setItem('master_resume', document.getElementById('master').value);
+  
+  try {
+    var response = await puter.ai.chat(prompt, {
+      model: model
+    });
+    
+    if(typeof response === 'string') return response;
+    if(response.message && response.message.content) {
+      if(Array.isArray(response.message.content)) {
+        return response.message.content[0].text;
+      }
+      return response.message.content;
+    }
+    return response.toString();
+  } catch(e) {
+    throw new Error('AI Error: ' + e.message);
+  }
+}
+
+async function tailorResume() {
+  var master = document.getElementById('master').value;
+  var job = document.getElementById('job').value;
+  var instructions = document.getElementById('instructions').value || 'Keep to 1 page, ATS friendly';
+
+  document.getElementById('errorbox').style.display = 'none';
+
+  if(!master){alert('Please paste your master resume!');return;}
+  if(!job){alert('Please paste the job description!');return;}
+
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('output').style.display = 'none';
+
+  try {
+    document.getElementById('progress').textContent = 'Step 1 of 4: Scoring your resume...';
+    var result1 = await callAI('Act as a senior recruiter. Score this resume against the job description out of 100. Give top 5 missing keywords and 3 red flags a hiring manager would spot instantly.\n\nRESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job);
+    document.getElementById('step1result').textContent = result1;
+
+    document.getElementById('progress').textContent = 'Step 2 of 4: Rewriting experience...';
+    var result2 = await callAI('Rewrite ONLY the Experience section using Google XYZ format: Accomplished X by doing Y resulting in Z. Naturally include missing keywords. Fix red flags. Never invent experience.\n\nORIGINAL RESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job + '\n\nISSUES FROM STEP 1:\n' + result1 + '\n\nInstructions: ' + instructions);
+    document.getElementById('step2result').textContent = result2;
+
+    document.getElementById('progress').textContent = 'Step 3 of 4: ATS optimization...';
+    var result3 = await callAI('Act as both ATS system and hiring manager. Scan this resume. Flag which sections get skipped. Rewrite those sections to fix both ATS and human reader issues.\n\nRESUME:\n' + master + '\n\nUPDATED EXPERIENCE:\n' + result2 + '\n\nJOB DESCRIPTION:\n' + job);
+    document.getElementById('step3result').textContent = result3;
+
+    document.getElementById('progress').textContent = 'Step 4 of 4: Creating final resume...';
+    var result4 = await callAI('Give me the complete final polished resume combining all improvements. Make it ATS friendly, clean, and professional. Output the COMPLETE resume ready to use.\n\nORIGINAL RESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job + '\n\nSTEP 1 FINDINGS:\n' + result1 + '\n\nSTEP 2 REWRITTEN EXPERIENCE:\n' + result2 + '\n\nSTEP 3 FIXES:\n' + result3 + '\n\nInstructions: ' + instructions);
+    document.getElementById('step4result').textContent = result4;
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('output').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('errorbox').style.display = 'block';
+    document.getElementById('errorbox').textContent = 'ERROR: ' + e.message;
+  }
+}
+
+function copyResume() {
+  var text = document.getElementById('step4result').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    alert('✅ Resume copied! Now paste it into Google Docs.');
+  });
+}
+</script>
+</body>
+</html>
