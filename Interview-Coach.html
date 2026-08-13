@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart Interview Coach</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+body{font-family:Arial;background:#1a1a2e;padding:20px;color:#333;}
+h1{color:#fff;text-align:center;font-size:32px;}
+.container{max-width:1000px;margin:auto;background:white;padding:30px;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,0.3);}
+textarea{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border-radius:10px;font-size:15px;font-family:Arial;}
+label{font-weight:bold;font-size:15px;color:#444;}
+.big-button{background:#e94560;color:white;font-size:22px;padding:18px;border:none;border-radius:12px;cursor:pointer;width:100%;margin:20px 0;font-weight:bold;}
+.big-button:hover{background:#d63447;}
+.submit-btn{background:#0f3460;color:white;font-size:18px;padding:14px;border:none;border-radius:10px;cursor:pointer;margin:5px;font-weight:bold;}
+.submit-btn:hover{background:#16213e;}
+.voice-btn{background:#e94560;color:white;font-size:18px;padding:14px;border:none;border-radius:10px;cursor:pointer;margin:5px;}
+.voice-btn.recording{background:#c62828;animation:pulse 1s infinite;}
+@keyframes pulse{0%{opacity:1;}50%{opacity:0.5;}100%{opacity:1;}}
+input,select{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border-radius:10px;font-size:15px;}
+.recruiter-box{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:25px;border-radius:15px;margin:20px 0;box-shadow:0 4px 20px rgba(102,126,234,0.4);}
+.recruiter-label{font-size:14px;opacity:0.9;margin-bottom:10px;font-weight:bold;}
+.question-text{font-size:22px;font-weight:bold;line-height:1.5;}
+.feedback-box{background:#f5f5f5;padding:25px;border-radius:15px;margin:20px 0;border-left:6px solid #4caf50;}
+.score-badge{display:inline-block;background:#4caf50;color:white;padding:8px 20px;border-radius:25px;font-size:24px;font-weight:bold;margin:10px 0;}
+.section-title{font-size:18px;font-weight:bold;margin:15px 0 8px 0;}
+.good{color:#2e7d32;}
+.improve{color:#e65100;}
+.perfect{color:#1565c0;}
+.progress-bar{background:#e0e0e0;border-radius:10px;height:12px;margin:15px 0;overflow:hidden;}
+.progress-fill{background:linear-gradient(90deg,#4caf50,#2196f3);height:100%;transition:width 0.5s;}
+.stats-row{display:flex;justify-content:space-between;gap:15px;margin:15px 0;}
+.stat-card{flex:1;background:#f5f5f5;padding:15px;border-radius:10px;text-align:center;}
+.stat-value{font-size:28px;font-weight:bold;color:#0f3460;}
+.stat-label{font-size:13px;color:#666;}
+.interview-type-badge{display:inline-block;padding:6px 15px;border-radius:20px;font-size:13px;font-weight:bold;margin:5px;}
+.hr-badge{background:#e3f2fd;color:#1565c0;}
+.behavioral-badge{background:#f3e5f5;color:#7b1fa2;}
+.technical-badge{background:#fff3e0;color:#e65100;}
+.setup-box{background:#fffde7;padding:20px;border-radius:15px;margin-bottom:20px;border-left:6px solid #f9a825;}
+.loading{text-align:center;padding:30px;color:#666;font-size:16px;}
+.spinner{display:inline-block;width:30px;height:30px;border:3px solid #f3f3f3;border-top:3px solid #e94560;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.final-report{background:linear-gradient(135deg,#4caf50 0%,#8bc34a 100%);color:white;padding:30px;border-radius:20px;margin:20px 0;}
+.tab-buttons{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;}
+.tab-btn{flex:1;padding:15px;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:bold;background:#f0f0f0;color:#666;min-width:150px;}
+.tab-btn.active{background:#e94560;color:white;}
+.model-select{padding:10px;border:2px solid #ddd;border-radius:10px;font-size:14px;margin:8px 0;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎤 Smart Interview Coach</h1>
+<p style="text-align:center;color:#666;font-size:16px;">Practice with AI Recruiters • Get Real Feedback • Ace Your Interviews</p>
+
+<div id="setupSection">
+
+<div class="setup-box">
+<label style="font-size:16px;color:#f57c00;">⚙️ Setup (One time)</label>
+
+<label>Choose AI Recruiter:</label>
+<select id="model" class="model-select" style="width:100%;">
+  <option value="gpt-4o-mini">⚡ GPT-4o Mini (Fast, Free)</option>
+  <option value="claude-sonnet-4-5">🏆 Claude Sonnet 4.5 (Most Realistic)</option>
+  <option value="gpt-4o">💎 GPT-4o (Best Quality)</option>
+  <option value="google/gemini-2.5-flash">⚡ Gemini 2.5 Flash</option>
+  <option value="meta-llama/llama-3.3-70b-instruct">🦙 Llama 3.3 70B</option>
+</select>
+
+<label>🔑 Backup Gemini API Key (Optional):</label>
+<input type="password" id="geminiKey" placeholder="AIzaSy... (paste your key for backup)">
+</div>
+
+<label>1. Your Resume:</label>
+<textarea id="resume" rows="8" placeholder="Paste your resume here..."></textarea>
+
+<label>2. Job Description (Optional but Recommended):</label>
+<textarea id="jd" rows="6" placeholder="Paste job description for personalized questions..."></textarea>
+
+<label>3. Choose Interview Type:</label>
+<div class="tab-buttons">
+  <button class="tab-btn active" onclick="selectType('hr', this)">👔 HR Screening</button>
+  <button class="tab-btn" onclick="selectType('behavioral', this)">🎭 Behavioral</button>
+  <button class="tab-btn" onclick="selectType('technical', this)">💻 Technical</button>
+  <button class="tab-btn" onclick="selectType('full', this)">🎯 Full Mock (All 3)</button>
+</div>
+
+<label>4. Difficulty Level:</label>
+<select id="difficulty" class="model-select" style="width:100%;">
+  <option value="easy">🟢 Easy (Entry Level)</option>
+  <option value="medium" selected>🟡 Medium (Mid Level)</option>
+  <option value="hard">🔴 Hard (Senior Level)</option>
+</select>
+
+<label>5. Number of Questions:</label>
+<select id="numQuestions" class="model-select" style="width:100%;">
+  <option value="5">5 Questions (Quick Practice)</option>
+  <option value="10" selected>10 Questions (Standard)</option>
+  <option value="15">15 Questions (Deep Practice)</option>
+</select>
+
+<button class="big-button" onclick="startInterview()">
+🎬 START MY INTERVIEW
+</button>
+
+</div>
+
+<div id="interviewSection" style="display:none;">
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-value" id="questionNum">1/10</div>
+    <div class="stat-label">Question</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="totalScore">0</div>
+    <div class="stat-label">Total Score</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="avgScore">0.0</div>
+    <div class="stat-label">Average</div>
+  </div>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width:0%;"></div>
+</div>
+
+<div id="typeBadge" style="text-align:center;margin:10px 0;"></div>
+
+<div class="recruiter-box">
+  <div class="recruiter-label">🎤 AI RECRUITER:</div>
+  <div class="question-text" id="questionText">Loading question...</div>
+</div>
+
+<label>Your Answer:</label>
+<textarea id="answer" rows="6" placeholder="Type your answer here... (or click Speak to use voice)"></textarea>
+
+<div style="text-align:center;">
+  <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Speak Answer</button>
+  <button class="submit-btn" onclick="submitAnswer()">✅ Submit Answer</button>
+  <button class="submit-btn" style="background:#666;" onclick="skipQuestion()">⏭️ Skip</button>
+</div>
+
+<div id="feedbackArea"></div>
+
+<div id="nextBtnArea" style="display:none;text-align:center;margin:20px 0;">
+  <button class="big-button" onclick="nextQuestion()">➡️ NEXT QUESTION</button>
+</div>
+
+<button class="submit-btn" style="background:#c62828;width:100%;margin-top:15px;" onclick="endInterview()">🛑 End Interview</button>
+
+</div>
+
+<div id="reportSection" style="display:none;">
+<div class="final-report">
+  <h2 style="margin:0 0 20px 0;">🎉 Interview Complete!</h2>
+  <div id="finalReportContent"></div>
+</div>
+<button class="big-button" onclick="restartInterview()">🔄 Start New Interview</button>
+</div>
+
+</div>
+
+<script>
+var interviewType = 'hr';
+var currentQuestion = 0;
+var totalQuestions = 10;
+var scores = [];
+var questions = [];
+var answers = [];
+var feedbacks = [];
+var recognition = null;
+var isRecording = false;
+
+window.onload = function() {
+  var r = localStorage.getItem('interview_resume');
+  if(r) document.getElementById('resume').value = r;
+  var j = localStorage.getItem('interview_jd');
+  if(j) document.getElementById('jd').value = j;
+  var gk = localStorage.getItem('gemini_key');
+  if(gk) document.getElementById('geminiKey').value = gk;
+  
+  if('webkitSpeechRecognition' in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    
+    recognition.onresult = function(event) {
+      var transcript = '';
+      for(var i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      document.getElementById('answer').value = transcript;
+    };
+    
+    recognition.onerror = function() {
+      isRecording = false;
+      document.getElementById('voiceBtn').classList.remove('recording');
+      document.getElementById('voiceBtn').innerHTML = '🎤 Speak Answer';
+    };
+  }
+};
+
+function selectType(type, btn) {
+  interviewType = type;
+  var buttons = document.querySelectorAll('.tab-btn');
+  buttons.forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function toggleVoice() {
+  if(!recognition) {
+    alert('Voice input not supported in this browser. Please use Chrome.');
+    return;
+  }
+  
+  if(isRecording) {
+    recognition.stop();
+    isRecording = false;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceBtn').innerHTML = '🎤 Speak Answer';
+  } else {
+    document.getElementById('answer').value = '';
+    recognition.start();
+    isRecording = true;
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceBtn').innerHTML = '⏹️ Stop Recording';
+  }
+}
+
+async function callAI(prompt) {
+  var model = document.getElementById('model').value;
+  var attempts = [
+    function() { return callPuter(prompt, model); },
+    function() { return callGemini(prompt); },
+    function() { return callPuter(prompt, 'gpt-4o-mini'); },
+    function() { return callPuter(prompt, 'meta-llama/llama-3.3-70b-instruct'); }
+  ];
+  
+  for(var i = 0; i < attempts.length; i++) {
+    try {
+      var result = await attempts[i]();
+      if(result && result.length > 20) return result;
+    } catch(e) { console.log('Failed:', e.message); }
+  }
+  throw new Error('All AI backups failed');
+}
+
+async function callPuter(prompt, model) {
+  var response = await puter.ai.chat(prompt, { model: model });
+  if(typeof response === 'string') return response;
+  if(response.message && response.message.content) {
+    if(Array.isArray(response.message.content)) return response.message.content[0].text;
+    return response.message.content;
+  }
+  return response.toString();
+}
+
+async function callGemini(prompt) {
+  var key = document.getElementById('geminiKey').value.trim();
+  if(!key) throw new Error('No Gemini key');
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' + key;
+  var response = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      contents: [{parts: [{text: prompt}]}],
+      generationConfig: {temperature: 0.7, maxOutputTokens: 3000}
+    })
+  });
+  var data = await response.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.candidates[0].content.parts[0].text;
+}
+
+async function startInterview() {
+  var resume = document.getElementById('resume').value;
+  var jd = document.getElementById('jd').value;
+  totalQuestions = parseInt(document.getElementById('numQuestions').value);
+  
+  if(!resume) { alert('Please paste your resume first!'); return; }
+  
+  localStorage.setItem('interview_resume', resume);
+  localStorage.setItem('interview_jd', jd);
+  localStorage.setItem('gemini_key', document.getElementById('geminiKey').value);
+  
+  currentQuestion = 0;
+  scores = [];
+  questions = [];
+  answers = [];
+  feedbacks = [];
+  
+  document.getElementById('setupSection').style.display = 'none';
+  document.getElementById('interviewSection').style.display = 'block';
+  document.getElementById('reportSection').style.display = 'none';
+  
+  await generateNextQuestion();
+}
+
+async function generateNextQuestion() {
+  var resume = document.getElementById('resume').value;
+  var jd = document.getElementById('jd').value;
+  var difficulty = document.getElementById('difficulty').value;
+  
+  document.getElementById('questionText').innerHTML = '<div class="loading"><div class="spinner"></div><br>AI Recruiter is preparing your question...</div>';
+  document.getElementById('feedbackArea').innerHTML = '';
+  document.getElementById('answer').value = '';
+  document.getElementById('nextBtnArea').style.display = 'none';
+  
+  var typeText = interviewType;
+  var typeBadge = '';
+  if(interviewType === 'full') {
+    var types = ['hr', 'behavioral', 'technical'];
+    typeText = types[currentQuestion % 3];
+  }
+  
+  if(typeText === 'hr') typeBadge = '<span class="interview-type-badge hr-badge">👔 HR Screening</span>';
+  if(typeText === 'behavioral') typeBadge = '<span class="interview-type-badge behavioral-badge">🎭 Behavioral</span>';
+  if(typeText === 'technical') typeBadge = '<span class="interview-type-badge technical-badge">💻 Technical</span>';
+  
+  document.getElementById('typeBadge').innerHTML = typeBadge;
+  
+  var previousQuestions = questions.map(function(q,i) { return (i+1) + '. ' + q; }).join('\n');
+  
+  var prompt = 'You are a professional ' + typeText.toUpperCase() + ' interviewer conducting a real interview.\n\n';
+  prompt += 'Candidate Resume:\n' + resume + '\n\n';
+  if(jd) prompt += 'Job Description:\n' + jd + '\n\n';
+  prompt += 'Difficulty: ' + difficulty + '\n';
+  prompt += 'Question Number: ' + (currentQuestion + 1) + ' of ' + totalQuestions + '\n\n';
+  
+  if(previousQuestions) prompt += 'Previous questions already asked (DO NOT REPEAT):\n' + previousQuestions + '\n\n';
+  
+  if(typeText === 'hr') {
+    prompt += 'Ask ONE realistic HR screening question. Focus on: career goals, salary expectations, cultural fit, why this role, availability, notice period, work authorization, motivation, company knowledge. Vary the questions. Be conversational like a real HR recruiter.\n';
+  } else if(typeText === 'behavioral') {
+    prompt += 'Ask ONE realistic behavioral question using STAR format. Focus on: leadership, conflict resolution, failure, teamwork, deadline pressure, difficult stakeholder, innovation, initiative, decision making. Start with Tell me about a time or Describe a situation. Be like a real behavioral interviewer.\n';
+  } else if(typeText === 'technical') {
+    prompt += 'Ask ONE realistic technical question relevant to the candidates skills and the job. Mix theory, problem-solving, and scenario-based questions. Be like a real technical interviewer.\n';
+  }
+  
+  prompt += '\nOutput ONLY the question. No preamble. No Here is your question. Just the actual question a real interviewer would ask.';
+  
+  try {
+    var question = await callAI(prompt);
+    question = question.trim().replace(/^["""]|["""]$/g, '');
+    questions.push(question);
+    document.getElementById('questionText').textContent = question;
+    
+    updateStats();
+  } catch(e) {
+    document.getElementById('questionText').textContent = 'Error generating question. Please try again.';
+  }
+}
+
+async function submitAnswer() {
+  var answer = document.getElementById('answer').value.trim();
+  if(!answer) { alert('Please write or speak your answer!'); return; }
+  
+  answers.push(answer);
+  
+  document.getElementById('feedbackArea').innerHTML = '<div class="loading"><div class="spinner"></div><br>AI Recruiter is evaluating your answer...</div>';
+  
+  var resume = document.getElementById('resume').value;
+  var jd = document.getElementById('jd').value;
+  var currentQ = questions[questions.length - 1];
+  
+  var prompt = 'You are a professional interviewer evaluating a candidates answer.\n\n';
+  prompt += 'Resume:\n' + resume + '\n\n';
+  if(jd) prompt += 'Job Description:\n' + jd + '\n\n';
+  prompt += 'Question Asked: ' + currentQ + '\n\n';
+  prompt += 'Candidate Answer: ' + answer + '\n\n';
+  prompt += 'Evaluate this answer honestly and professionally. Provide:\n\n';
+  prompt += 'SCORE: [X/10]\n\n';
+  prompt += 'WHAT WAS GOOD:\n[bullet points of strengths]\n\n';
+  prompt += 'WHAT TO IMPROVE:\n[bullet points of specific improvements]\n\n';
+  prompt += 'PERFECT ANSWER EXAMPLE:\n[Show a 3-4 sentence example of an ideal answer using STAR method if behavioral]\n\n';
+  prompt += 'Keep it constructive and specific. Be direct like a real recruiter.';
+  
+  try {
+    var feedback = await callAI(prompt);
+    feedbacks.push(feedback);
+    
+    var scoreMatch = feedback.match(/SCORE[:\s]*(\d+)\s*[\/\\]\s*10/i);
+    var score = scoreMatch ? parseInt(scoreMatch[1]) : 5;
+    scores.push(score);
+    
+    displayFeedback(feedback, score);
+    updateStats();
+    
+    document.getElementById('nextBtnArea').style.display = 'block';
+  } catch(e) {
+    document.getElementById('feedbackArea').innerHTML = '<div class="feedback-box" style="border-color:#f44336;">Error evaluating answer. Try again.</div>';
+  }
+}
+
+function displayFeedback(feedback, score) {
+  var html = '<div class="feedback-box">';
+  html += '<div style="text-align:center;"><div class="score-badge">Score: ' + score + '/10</div></div>';
+  
+  var sections = feedback.split(/WHAT WAS GOOD|WHAT TO IMPROVE|PERFECT ANSWER EXAMPLE/i);
+  
+  if(sections.length >= 4) {
+    html += '<div class="section-title good">✅ What Was Good:</div>';
+    html += '<div>' + sections[1].replace(/:/, '').trim().replace(/\n/g, '<br>') + '</div>';
+    
+    html += '<div class="section-title improve">⚠️ What To Improve:</div>';
+    html += '<div>' + sections[2].replace(/:/, '').trim().replace(/\n/g, '<br>') + '</div>';
+    
+    html += '<div class="section-title perfect">💎 Perfect Answer Example:</div>';
+    html += '<div style="background:#e3f2fd;padding:15px;border-radius:8px;font-style:italic;">' + sections[3].replace(/:/, '').trim().replace(/\n/g, '<br>') + '</div>';
+  } else {
+    html += '<div>' + feedback.replace(/\n/g, '<br>') + '</div>';
+  }
+  
+  html += '</div>';
+  document.getElementById('feedbackArea').innerHTML = html;
+}
+
+function skipQuestion() {
+  answers.push('[Skipped]');
+  scores.push(0);
+  feedbacks.push('Question was skipped.');
+  nextQuestion();
+}
+
+async function nextQuestion() {
+  currentQuestion++;
+  if(currentQuestion >= totalQuestions) {
+    showFinalReport();
+    return;
+  }
+  await generateNextQuestion();
+}
+
+function updateStats() {
+  document.getElementById('questionNum').textContent = (currentQuestion + 1) + '/' + totalQuestions;
+  var total = scores.reduce(function(a,b) { return a+b; }, 0);
+  var avg = scores.length ? (total / scores.length).toFixed(1) : '0.0';
+  document.getElementById('totalScore').textContent = total;
+  document.getElementById('avgScore').textContent = avg;
+  var progress = ((currentQuestion + 1) / totalQuestions) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+}
+
+async function showFinalReport() {
+  document.getElementById('interviewSection').style.display = 'none';
+  document.getElementById('reportSection').style.display = 'block';
+  
+  var total = scores.reduce(function(a,b) { return a+b; }, 0);
+  var avg = scores.length ? (total / scores.length).toFixed(1) : '0.0';
+  var maxScore = totalQuestions * 10;
+  var percentage = ((total / maxScore) * 100).toFixed(0);
+  
+  var readiness = 'Not Ready';
+  if(percentage >= 80) readiness = 'Interview Ready! 🎉';
+  else if(percentage >= 60) readiness = 'Almost Ready 💪';
+  else if(percentage >= 40) readiness = 'Needs More Practice 📚';
+  
+  var html = '<div style="text-align:center;">';
+  html += '<div style="font-size:60px;font-weight:bold;">' + percentage + '%</div>';
+  html += '<div style="font-size:20px;margin:10px 0;">' + readiness + '</div>';
+  html += '<div style="font-size:16px;opacity:0.9;">Total Score: ' + total + ' / ' + maxScore + '</div>';
+  html += '<div style="font-size:16px;opacity:0.9;">Average per question: ' + avg + '/10</div>';
+  html += '</div>';
+  
+  document.getElementById('finalReportContent').innerHTML = html;
+  
+  var prompt = 'You are a career coach. Based on this interview performance, provide personalized coaching advice.\n\n';
+  prompt += 'Questions and Answers:\n';
+  for(var i = 0; i < questions.length; i++) {
+    prompt += '\nQ' + (i+1) + ': ' + questions[i] + '\nA' + (i+1) + ': ' + (answers[i] || '[skipped]') + '\nScore: ' + (scores[i] || 0) + '/10\n';
+  }
+  prompt += '\nProvide:\n1. Top 3 STRENGTHS you noticed\n2. Top 3 AREAS TO IMPROVE\n3. Specific NEXT STEPS to prepare\n4. Overall Assessment (2 sentences)\n\nBe encouraging and specific.';
+  
+  try {
+    var advice = await callAI(prompt);
+    var adviceDiv = document.createElement('div');
+    adviceDiv.style.background = 'white';
+    adviceDiv.style.color = '#333';
+    adviceDiv.style.padding = '25px';
+    adviceDiv.style.borderRadius = '15px';
+    adviceDiv.style.marginTop = '20px';
+    adviceDiv.innerHTML = '<h3 style="margin-top:0;color:#1a1a2e;">📊 Personalized Coaching Report</h3><div style="white-space:pre-wrap;line-height:1.6;">' + advice + '</div>';
+    document.getElementById('finalReportContent').appendChild(adviceDiv);
+  } catch(e) {
+    console.log('Could not generate final advice');
+  }
+}
+
+function endInterview() {
+  if(confirm('End the interview now?')) {
+    showFinalReport();
+  }
+}
+
+function restartInterview() {
+  document.getElementById('setupSection').style.display = 'block';
+  document.getElementById('interviewSection').style.display = 'none';
+  document.getElementById('reportSection').style.display = 'none';
+  currentQuestion = 0;
+  scores = [];
+  questions = [];
+  answers = [];
+  feedbacks = [];
+}
+</script>
+</body>
+</html>
