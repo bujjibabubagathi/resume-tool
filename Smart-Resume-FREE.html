@@ -47,15 +47,6 @@ input{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border-ra
 <label>2. Job Description:</label>
 <textarea id="job" rows="8" placeholder="Paste the full job description here..."></textarea>
 
-<label>3. Company Name:</label>
-<input type="text" id="company" placeholder="e.g. Johnson Controls">
-
-<label>4. Job Role:</label>
-<input type="text" id="role" placeholder="e.g. Product Development Engineer">
-
-<label>5. Your Instructions (optional):</label>
-<textarea id="instructions" rows="2" placeholder="e.g. Keep to 1 page. Focus on HVAC and thermal systems. ATS friendly."></textarea>
-
 <button class="big-button" onclick="tailorResume()">
 🔥 TAILOR MY RESUME NOW (100% FREE)
 </button>
@@ -131,7 +122,6 @@ async function callAI(prompt) {
 async function tailorResume() {
   var master = document.getElementById('master').value;
   var job = document.getElementById('job').value;
-  var instructions = document.getElementById('instructions').value || 'Keep to 1 page, ATS friendly';
 
   document.getElementById('errorbox').style.display = 'none';
 
@@ -147,7 +137,7 @@ async function tailorResume() {
     document.getElementById('step1result').textContent = result1;
 
     document.getElementById('progress').textContent = 'Step 2 of 4: Rewriting experience...';
-    var result2 = await callAI('Rewrite ONLY the Experience section using Google XYZ format: Accomplished X by doing Y resulting in Z. Naturally include missing keywords. Fix red flags. Never invent experience.\n\nORIGINAL RESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job + '\n\nISSUES FROM STEP 1:\n' + result1 + '\n\nInstructions: ' + instructions);
+    var result2 = await callAI('Rewrite ONLY the Experience section using Google XYZ format: Accomplished X by doing Y resulting in Z. Naturally include missing keywords. Fix red flags. Never invent experience. Keep to 1 page. ATS friendly.\n\nORIGINAL RESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job + '\n\nISSUES FROM STEP 1:\n' + result1);
     document.getElementById('step2result').textContent = result2;
 
     document.getElementById('progress').textContent = 'Step 3 of 4: ATS optimization...';
@@ -155,7 +145,7 @@ async function tailorResume() {
     document.getElementById('step3result').textContent = result3;
 
     document.getElementById('progress').textContent = 'Step 4 of 4: Creating final resume...';
-    var result4 = await callAI('Give me the complete final polished resume combining all improvements. Make it ATS friendly, clean, and professional. Output the COMPLETE resume ready to use.\n\nORIGINAL RESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job + '\n\nSTEP 1 FINDINGS:\n' + result1 + '\n\nSTEP 2 REWRITTEN EXPERIENCE:\n' + result2 + '\n\nSTEP 3 FIXES:\n' + result3 + '\n\nInstructions: ' + instructions);
+    var result4 = await callAI('Give me the complete final polished resume combining all improvements. Make it ATS friendly, clean, and professional. Keep to 1 page. Output the COMPLETE resume ready to use.\n\nORIGINAL RESUME:\n' + master + '\n\nJOB DESCRIPTION:\n' + job + '\n\nSTEP 1 FINDINGS:\n' + result1 + '\n\nSTEP 2 REWRITTEN EXPERIENCE:\n' + result2 + '\n\nSTEP 3 FIXES:\n' + result3);
     document.getElementById('step4result').textContent = result4;
 
     document.getElementById('loading').style.display = 'none';
