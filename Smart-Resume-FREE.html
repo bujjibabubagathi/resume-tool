@@ -11,6 +11,8 @@ textarea{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border
 label{font-weight:bold;font-size:15px;}
 .big-button{background:#1a73e8;color:white;font-size:22px;padding:18px;border:none;border-radius:12px;cursor:pointer;width:100%;margin:20px 0;}
 .big-button:hover{background:#0d5fd1;}
+.fetch-button{background:#ff9800;color:white;font-size:16px;padding:12px;border:none;border-radius:8px;cursor:pointer;margin:5px 0;width:100%;}
+.fetch-button:hover{background:#e68900;}
 .step-box{border-radius:10px;padding:20px;margin:15px 0;}
 .step1{background:#fff3e0;border-left:5px solid #ff9800;}
 .step2{background:#e8f5e9;border-left:5px solid #4caf50;}
@@ -23,32 +25,43 @@ pre{white-space:pre-wrap;font-family:Arial;font-size:14px;line-height:1.6;}
 input{width:97%;padding:12px;margin:8px 0 16px 0;border:2px solid #ddd;border-radius:8px;font-size:14px;}
 .success{background:#e8f5e9;border:2px solid #4caf50;padding:15px;border-radius:8px;margin:10px 0;text-align:center;font-size:18px;}
 .error{background:#ffebee;border:2px solid #f44336;padding:15px;border-radius:8px;margin:10px 0;color:#c62828;}
+.warning{background:#fff9c4;border:2px solid #f9a825;padding:15px;border-radius:8px;margin:10px 0;color:#795548;}
 .free-badge{background:#4caf50;color:white;padding:5px 10px;border-radius:20px;font-size:14px;font-weight:bold;}
+.new-badge{background:#ff5722;color:white;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:bold;margin-left:8px;}
 .model-select{padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin:8px 0;}
+.url-input{width:75%;padding:12px;border:2px solid #1a73e8;border-radius:8px;font-size:14px;}
+.url-container{display:flex;gap:8px;margin-bottom:10px;}
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🚀 Smart Resume Tailor <span class="free-badge">100% FREE</span></h1>
-<p style="text-align:center;color:#666;">No API Key • No Limits • Unlimited Free Use</p>
+<p style="text-align:center;color:#666;">No API Key • No Limits • Auto-Fetch Job URLs</p>
 
 <label>Choose AI Model:</label>
 <select id="model" class="model-select" style="width:100%;">
-    <option value="gpt-4o-mini">⚡ GPT-4o Mini (Fastest, Free)</option>
+  <option value="gpt-4o-mini">⚡ GPT-4o Mini (Fastest, Free)</option>
   <option value="gpt-4o">💎 GPT-4o (Best Quality)</option>
   <option value="claude-sonnet-4-5">🏆 Claude Sonnet 4.5 (Best for Resumes)</option>
   <option value="claude-opus-4">🚀 Claude Opus 4 (Most Powerful)</option>
-  <option value="google/gemini-2.5-flash">⚡ Gemini 2.5 Flash (Fast)</option>
-  <option value="google/gemini-2.5-pro">💎 Gemini 2.5 Pro (Powerful)</option>
-  <option value="deepseek-chat">🆓 DeepSeek Chat (Free)</option>
-  <option value="meta-llama/llama-3.3-70b-instruct">🦙 Llama 3.3 70B (Free)</option>
+  <option value="google/gemini-2.5-flash">⚡ Gemini 2.5 Flash</option>
+  <option value="google/gemini-2.5-pro">💎 Gemini 2.5 Pro</option>
+  <option value="deepseek-chat">🆓 DeepSeek Chat</option>
+  <option value="meta-llama/llama-3.3-70b-instruct">🦙 Llama 3.3 70B</option>
 </select>
 
 <label>1. Your Master Resume:</label>
 <textarea id="master" rows="10" placeholder="Paste your full master resume here..."></textarea>
 
-<label>2. Job Description:</label>
-<textarea id="job" rows="8" placeholder="Paste the full job description here..."></textarea>
+<label>2. Job URL or Description <span class="new-badge">NEW!</span></label>
+<div class="url-container">
+  <input type="text" id="joburl" class="url-input" placeholder="Paste job URL (LinkedIn, Indeed, etc.) OR skip and paste text below">
+  <button class="fetch-button" style="width:22%;margin:0;" onclick="fetchJob()">🔗 Fetch Job</button>
+</div>
+
+<div id="fetchStatus" style="display:none;margin-bottom:10px;"></div>
+
+<textarea id="job" rows="8" placeholder="OR paste the full job description here manually..."></textarea>
 
 <button class="big-button" onclick="tailorResume()">
 🔥 TAILOR MY RESUME NOW (100% FREE)
@@ -100,6 +113,48 @@ window.onload = function() {
   if(resume) document.getElementById('master').value = resume;
 };
 
+async function fetchJob() {
+  var url = document.getElementById('joburl').value.trim();
+  var status = document.getElementById('fetchStatus');
+  
+  if(!url) {
+    alert('Please paste a job URL first!');
+    return;
+  }
+  
+  if(!url.startsWith('http')) {
+    alert('Please enter a valid URL starting with http or https');
+    return;
+  }
+  
+  status.style.display = 'block';
+  status.className = 'warning';
+  status.innerHTML = '⏳ Fetching job description... Please wait 5-10 seconds...';
+  
+  try {
+    var proxyUrl = 'https://r.jina.ai/' + url;
+    var response = await fetch(proxyUrl);
+    var text = await response.text();
+    
+    if(text && text.length > 200) {
+      var cleanText = text.replace(/\[.*?\]\(.*?\)/g, '').replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n{3,}/g, '\n\n').trim();
+      
+      document.getElementById('job').value = cleanText;
+      status.className = 'success';
+      status.innerHTML = '✅ Job description fetched successfully! You can review and edit it below, then click the big blue button.';
+      
+      setTimeout(function() {
+        status.style.display = 'none';
+      }, 5000);
+    } else {
+      throw new Error('Could not extract job description');
+    }
+  } catch(e) {
+    status.className = 'error';
+    status.innerHTML = '❌ Could not fetch this URL automatically.<br><br>💡 <strong>What to do:</strong><br>1. Open the job in a new tab<br>2. Copy the full job description<br>3. Paste it in the box below<br><br>(LinkedIn often blocks auto-fetching - manual paste always works!)';
+  }
+}
+
 async function callAI(prompt) {
   var model = document.getElementById('model').value;
   localStorage.setItem('master_resume', document.getElementById('master').value);
@@ -129,7 +184,7 @@ async function tailorResume() {
   document.getElementById('errorbox').style.display = 'none';
 
   if(!master){alert('Please paste your master resume!');return;}
-  if(!job){alert('Please paste the job description!');return;}
+  if(!job){alert('Please paste the job description or fetch from URL!');return;}
 
   document.getElementById('loading').style.display = 'block';
   document.getElementById('output').style.display = 'none';
